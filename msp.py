@@ -52,7 +52,7 @@ def calculate_checksum(arguments: Union[int, str, bool, bytes, List[Union[int, s
             return str(obj)
 
         if isinstance(obj, amf3.ByteArray):
-            from_byte_array(obj)
+            return from_byte_array(obj)
 
         if isinstance(obj, (date, datetime)):
             return str(obj.year) + str(obj.month - 1) + str(obj.day)
