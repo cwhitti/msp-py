@@ -7,6 +7,7 @@ import binascii
 import http.client
 import random
 import base64
+import msp_tls_client
 from typing import List, Union
 from datetime import date, datetime
 from urllib.parse import urlparse
@@ -107,7 +108,6 @@ def calculate_checksum(arguments: Union[int, str, bool, bytes, List[Union[int, s
     return hashlib.sha1(result_str.encode()).hexdigest()
 
 
-
 def invoke_method(server: str, method: str, params: list, session_id: str) -> tuple[int, any]:
     """
     Invoke a method on the MSP API
@@ -129,7 +129,11 @@ def invoke_method(server: str, method: str, params: list, session_id: str) -> tu
     encoded_req = remoting.encode(event).getvalue()
 
     full_endpoint = f"https://ws-{server}.mspapis.com/Gateway.aspx?method={method}"
-    conn = http.client.HTTPSConnection(urlparse(full_endpoint).hostname)
+
+    session = msp_tls_client.Session(
+        client_identifier="xerus_ja3_spoof",
+        force_http1=True,
+    )
 
     headers = {
         "Referer": "app:/cache/t1.bin/[[DYNAMIC]]/2",
@@ -140,22 +144,20 @@ def invoke_method(server: str, method: str, params: list, session_id: str) -> tu
                    "video/x-flv;q=0.7, audio/mp4, application/futuresplash, "
                    "/;q=0.5, application/x-mpegURL"),
         "x-flash-version": "32,0,0,100",
-        "Content-Length": str(len(encoded_req)),
         "Content-Type": "application/x-amf",
         "Accept-Encoding": "gzip, deflate",
         "User-Agent": "Mozilla/5.0 (Windows; U; en) AppleWebKit/533.19.4 "
                       "(KHTML, like Gecko) AdobeAIR/32.0",
         "Connection": "Keep-Alive",
     }
-    path = urlparse(full_endpoint).path
-    query = urlparse(full_endpoint).query
-    conn.request("POST", path + "?" + query, encoded_req, headers=headers)
 
-    with conn.getresponse() as resp:
-        resp_data = resp.read() if resp.status == 200 else None
-        if resp.status != 200:
-            return (resp.status, resp_data)
-        return (resp.status, remoting.decode(resp_data)["/1"].body)
+    response = session.post(full_endpoint, data=encoded_req, headers=headers)
+
+    resp_data = response.content if response.status_code == 200 else None
+
+    if response.status_code != 200:
+        return (response.status_code, resp_data)
+    return (response.status_code, remoting.decode(resp_data)["/1"].body)
 
 
 def get_session_id() -> str:
