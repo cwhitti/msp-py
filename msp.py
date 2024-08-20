@@ -4,13 +4,11 @@ A Python implementation to interact with the MSP API
 
 import hashlib
 import binascii
-import http.client
 import random
 import base64
 import msp_tls_client
 from typing import List, Union
 from datetime import date, datetime
-from urllib.parse import urlparse
 from pyamf import remoting, ASObject, TypedObject, AMF3, amf3
 from secrets import token_hex
 
