@@ -12,25 +12,23 @@ from datetime import date, datetime
 from pyamf import remoting, ASObject, TypedObject, AMF3, amf3
 from secrets import token_hex
 
+def get_marking_id() -> int:
+    """
+    Generate a random marking ID
+    """
+    marking_id = random.randint(2**0, 2**32)
+    return marking_id
 
-# Generator to retrieve a Marking ID for ticket headers
-def _marking_id():
-    _int = random.randint(1, 100)
-    while True:
-        _int += random.randint(1, 2)
-        yield _int
-
-# Instantiate the generator
-marking_id = _marking_id()
 def ticket_header(ticket: str) -> ASObject:
     """
     Generate a ticket header for the given ticket
     """
 
-    loc1bytes = str(next(marking_id)).encode('utf-8')
-    loc5 = hashlib.md5(loc1bytes).hexdigest()
-    loc6 = binascii.hexlify(loc1bytes).decode()
-    return ASObject({"Ticket": ticket + loc5 + loc6, "anyAttribute": None})
+    marking_id = get_marking_id()
+    marking_id_bytes = str(marking_id).encode('utf-8')
+    marking_id_hash = hashlib.md5(marking_id_bytes).hexdigest()
+    marking_id_hex = binascii.hexlify(marking_id_bytes).decode()
+    return ASObject({"Ticket": ticket + marking_id_hash + marking_id_hex, "anyAttribute": None})
 
 
 def calculate_checksum(arguments: Union[int, str, bool, bytes, List[Union[int, str, bool, bytes]],
