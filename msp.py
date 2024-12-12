@@ -6,11 +6,11 @@ import hashlib
 import binascii
 import random
 import base64
-import msp_tls_client
 from typing import List, Union
 from datetime import date, datetime
 from pyamf import remoting, ASObject, TypedObject, AMF3, amf3
 from secrets import token_hex
+from curl_cffi import requests
 
 def get_marking_id() -> int:
     """
@@ -126,10 +126,10 @@ def invoke_method(server: str, method: str, params: list, session_id: str) -> tu
 
     full_endpoint = f"https://ws-{server}.mspapis.com/Gateway.aspx?method={method}"
 
-    session = msp_tls_client.Session(
-        client_identifier="xerus_ja3_spoof",
-        force_http1=True,
-    )
+    # session = msp_tls_client.Session(
+    #     client_identifier="xerus_ja3_spoof",
+    #     force_http1=True,
+    # )
 
     headers = {
         "Referer": "app:/cache/t1.bin/[[DYNAMIC]]/2",
@@ -147,7 +147,12 @@ def invoke_method(server: str, method: str, params: list, session_id: str) -> tu
         "Connection": "Keep-Alive",
     }
 
-    response = session.post(full_endpoint, data=encoded_req, headers=headers)
+    response = requests.post(full_endpoint, data=encoded_req, headers=headers)
+
+    # if response.status_code != 200:
+    #     return (response.status_code, response.content)
+
+    # return (response.status_code, remoting.decode(response.content)["/1"].body)
 
     resp_data = response.content if response.status_code == 200 else None
 
