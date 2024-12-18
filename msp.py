@@ -16,8 +16,6 @@ class XerusHandler():
     def __init__(self, proxies = None) -> None:
 
         self.proxies = proxies
-        self.use_proxies = use_proxies
-
 
     def get_marking_id(self) -> int:
         """
@@ -190,7 +188,7 @@ def _example():
     "https": proxy_url,
     }
 
-    handler = XerusHandler(DNS.proxies, DNS.use_proxies)
+    handler = XerusHandler(proxies=proxies)
 
     # Set login credentials and server name
     USERNAME = ""
